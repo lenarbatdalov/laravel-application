@@ -1,0 +1,48 @@
+version: '3.5'
+services:
+  adminer:
+    image: adminer
+    ports:
+      - 8081:8080
+
+  mysql:
+    image: mysql:8.0.21
+    container_name: mysql8
+    tty: true
+    command: --sql_mode=''
+    ports:
+      - 3380:3306
+    environment:
+      MYSQL_DATABASE: laravel
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: user
+      MYSQL_PASSWORD: user
+      SERVICE_NAME: mysql8
+    volumes:
+      - ./db-data:/var/lib/mysql/
+
+  php:
+    build:
+      context: ./config/
+      dockerfile: Dockerfile
+    container_name: php
+    tty: true
+    ports:
+      - 9090:9000
+    environment:
+      SERVICE_NAME: php
+      SERVICE_TAGS: dev
+    working_dir: /var/www/html/
+    volumes:
+      - ./distr/:/var/www/html/
+
+  nginx-server:
+    image: nginx
+    container_name: nginx-server
+    tty: true
+    ports:
+      - 8080:80
+      - 444:443
+    volumes:
+      - ./distr/:/var/www/html/
+      - ./config/nginx-vh.conf:/etc/nginx/conf.d/app.conf:ro
